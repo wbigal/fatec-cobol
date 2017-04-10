@@ -1,0 +1,171 @@
+* Microsoft COBOL Version 4.5        L2.4 revision 002 09-Apr-17 22:43 Page   1
+*                                       EX02.CBL
+* Options: LIST(EX02.LST) NOASMLIST
+     1 IDENTIFICATION       DIVISION.
+     2 PROGRAM-ID.          EX02.
+     3 AUTHOR.              WAGNER BIGAL.
+     4 INSTALLATION.        FATEC-SP.
+     5 DATE-WRITTEN.        09/04/2017.
+     6 DATE-COMPILED. 09-Apr-17 22:43.
+     7 SECURITY.     APENAS O AUTOR PODE MODIFICA-LO.
+     8*REMARKS.      GERA UM RELATORIO COM OS CLIENTES DO PERIODO
+     9*              DE 2010 A 2011.
+    10
+    11*==============================================================
+    12 ENVIRONMENT           DIVISION.
+    13 CONFIGURATION         SECTION.
+    14 SOURCE-COMPUTER.      IBM-PC.
+    15 OBJECT-COMPUTER.      IBM-PC.
+    16 SPECIAL-NAMES.        DECIMAL-POINT IS COMMA.
+    17
+    18 INPUT-OUTPUT          SECTION.
+    19 FILE-CONTROL.
+    20        SELECT CADCLI ASSIGN TO DISK
+    21        ORGANIZATION IS LINE SEQUENTIAL.
+    22
+    23        SELECT RELCLI ASSIGN TO DISK.
+    24
+    25*==============================================================
+    26 DATA                 DIVISION.
+    27 FILE                 SECTION.
+    28
+    29 FD     CADCLI
+    30        LABEL RECORD ARE STANDARD
+    31        VALUE OF FILE-ID IS "CADCLI.DAT".
+    32 01     REG-CLI.
+    33        02 CPF                  PIC 9(11).
+    34        02 NOME                 PIC X(30).
+    35        02 ESTADO               PIC X(02).
+    36        02 CIDADE               PIC X(30).
+    37        02 TELEFONE             PIC 9(08).
+    38        02 DATA-ULT-VISITA.
+    39               03 DIA           PIC 9(02).
+    40               03 MES           PIC 9(02).
+    41               03 ANO           PIC 9(04).
+    42
+    43 FD     RELCLI
+    44        LABEL RECORD IS OMITTED.
+    45 01     REG-REL              PIC X(80).
+    46
+    47 WORKING-STORAGE      SECTION.
+    48 77     FIM-ARQ              PIC X(03) VALUE "NAO".
+    49 77     CT-LIN               PIC 9(02) VALUE 25.
+    50 77     CT-PAG               PIC 9(02) VALUE ZEROES.
+    51 77     TOTAL-CLIENTES       PIC 9(04) VALUE ZEROES.
+    52
+    53 01     CAB-01.
+    54        02 FILLER            PIC X(70) VALUE SPACES.
+    55        02 FILLER            PIC X(05) VALUE "PAG. ".
+    56        02 VAR-PAG           PIC 99.
+    57        02 FILLER            PIC X(03) VALUE SPACES.
+* Microsoft COBOL Version 4.5        L2.4 revision 002 09-Apr-17 22:43 Page   2
+*                                       EX02.CBL
+    58
+    59 01     CAB-02.
+    60        02 FILLER            PIC X(31) VALUE SPACES.
+    61        02 FILLER            PIC X(17) VALUE "TURISMAR TURISMO".
+    62        02 FILLER            PIC X(32) VALUE SPACES.
+    63
+    64 01     CAB-03.
+    65        02 FILLER            PIC X(22) VALUE SPACES.
+    66        02 FILLER            PIC X(35)
+    67           VALUE "CLIENTES NO PERIODO DE: 2010 A 2011".
+    68        02 FILLER            PIC X(23) VALUE SPACES.
+    69
+    70 01     CAB-04.
+    71        02 FILLER            PIC X(18) VALUE SPACES.
+    72        02 FILLER            PIC X(04) VALUE "NOME".
+    73        02 FILLER            PIC X(21) VALUE SPACES.
+    74        02 FILLER            PIC X(06) VALUE "ESTADO".
+    75        02 FILLER            PIC X(13) VALUE SPACES.
+    76        02 FILLER            PIC X(08) VALUE "TELEFONE".
+    77        02 FILLER            PIC X(10) VALUE SPACES.
+    78
+    79 01     CAB-05.
+    80        02 FILLER            PIC X(80) VALUE ALL "-".
+    81
+    82 01     CAB-06.
+    83        02 FILLER            PIC X(80) VALUE SPACES.
+    84
+    85 01     DETALHE.
+    86        02 FILLER            PIC X(06) VALUE SPACES.
+    87        02 VAR-NOME          PIC X(30).
+    88        02 FILLER            PIC X(09) VALUE SPACES.
+    89        02 VAR-ESTADO        PIC X(02).
+    90        02 FILLER            PIC X(15) VALUE SPACES.
+    91        02 VAR-FONE          PIC 99999999.
+    92        02 FILLER            PIC X(11) VALUE SPACES.
+    93
+    94 01     ROD-01.
+    95        02 FILLER            PIC X(06) VALUE SPACES.
+    96        02 FILLER            PIC X(20)
+    97           VALUE "Total de Clientes: ".
+    98        02 VAR-TOTAL         PIC 9999.
+    99        02 FILLER            PIC X(50) VALUE SPACES.
+   100
+   101*==============================================================
+   102 PROCEDURE            DIVISION.
+   103 PGM-EX02.
+   104        PERFORM INICIO.
+   105        PERFORM PRINCIPAL UNTIL FIM-ARQ EQUAL "SIM".
+   106        PERFORM FIM.
+   107        STOP RUN.
+   108
+   109 INICIO.
+   110        OPEN   INPUT  CADCLI
+   111               OUTPUT RELCLI.
+   112        PERFORM LEITURA.
+   113
+   114 LEITURA.
+   115        READ CADCLI AT END MOVE "SIM" TO FIM-ARQ.
+* Microsoft COBOL Version 4.5        L2.4 revision 002 09-Apr-17 22:43 Page   3
+*                                       EX02.CBL
+   116
+   117 PRINCIPAL.
+   118        PERFORM SELECAO.
+   119        PERFORM LEITURA.
+   120
+   121 SELECAO.
+   122        IF ANO EQUAL 2010 OR 2011
+   123               PERFORM IMPRECAO.
+   124
+   125 IMPRECAO.
+   126        IF CT-LIN GREATER THAN 24
+   127               PERFORM CABECALHO.
+   128        PERFORM IMPDET.
+   129
+   130 CABECALHO.
+   131        ADD 1 TO CT-PAG.
+   132        MOVE   CT-PAG        TO VAR-PAG.
+   133        MOVE   SPACES        TO REG-REL.
+   134        WRITE  REG-REL FROM CAB-01.
+   135        WRITE  REG-REL FROM CAB-02 AFTER ADVANCING 1 LINE.
+   136        WRITE  REG-REL FROM CAB-03 AFTER ADVANCING 3 LINES.
+   137        WRITE  REG-REL FROM CAB-04 AFTER ADVANCING 3 LINES.
+   138        WRITE  REG-REL FROM CAB-05 AFTER ADVANCING 1 LINE.
+   139        WRITE  REG-REL FROM CAB-06 AFTER ADVANCING 1 LINE.
+   140        MOVE   ZEROES        TO CT-LIN.
+   141
+   142 IMPDET.
+   143        MOVE   NOME          TO VAR-NOME.
+   144        MOVE   ESTADO        TO VAR-ESTADO.
+   145        MOVE   TELEFONE      TO VAR-FONE.
+   146        WRITE  REG-REL FROM DETALHE AFTER 1 LINE.
+   147        ADD 1 TO TOTAL-CLIENTES.
+   148        ADD 1 TO CT-LIN.
+   149
+   150 FIM.
+   151        IF TOTAL-CLIENTES GREATER THAN ZEROES
+   152               PERFORM RODAPE.
+   153        CLOSE  CADCLI
+   154               RELCLI.
+   155
+   156 RODAPE.
+   157        MOVE   TOTAL-CLIENTES       TO VAR-TOTAL.
+   158        WRITE  REG-REL FROM ROD-01 AFTER ADVANCING 3 LINES.
+* Microsoft COBOL Version 4.5        L2.4 revision 002
+* (C)Copyright Microsoft Corp 1984, 1991       URN AXUPA/MS0/000000
+*                                              REF GNB-024050002A7
+*
+* Total Messages:     0
+* Data:        1812     Code:         710     Dictionary:        2026

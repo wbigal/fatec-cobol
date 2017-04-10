@@ -1,0 +1,14 @@
+                                                                      PAG.   1  
+                     LISTAGEM DOS CLIENTES DO SEXO FEMININO                     
+                       COM SALARIOS SUPERIORES A 5.000,00                       
+
+
+          CODIGO      NOME                                SALARIO               
+                                                                                
+          1234567     JOANA ITAQUAQUECETUBA SILVANAS      98.765,43             
+          3           ANA CLARA                            5.500,00             
+          5           APARECIDA                            5.000,00             
+
+
+     Total de Clientes impressos:       003                                     
+     Total de Salario:                  109.265,43                              

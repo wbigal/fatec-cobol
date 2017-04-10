@@ -1,0 +1,189 @@
+* Microsoft COBOL Version 4.5        L2.4 revision 002 09-Apr-17 20:35 Page   1
+*                                       EX01.CBL
+* Options: LIST(EX01.LST) NOASMLIST
+     1 IDENTIFICATION       DIVISION.
+     2 PROGRAM-ID.          EX01.
+     3 AUTHOR.              WAGNER BIGAL.
+     4 INSTALLATION.        FATEC-SP.
+     5 DATE-WRITTEN.        09/04/2017.
+     6 DATE-COMPILED. 09-Apr-17 20:35.
+     7 SECURITY.     APENAS O AUTOR PODE MODIFICA-LO.
+     8*REMARKS: ESTE PROGRAMA GERA UM ARQUIVO DE CONTAS
+     9          PAGAS E UM RELATORIO DE CONTAS NAO PAGAS.
+    10
+    11*==============================================================
+    12 ENVIRONMENT          DIVISION.
+    13 CONFIGURATION        SECTION.
+    14 SOURCE-COMPUTER.     IBM-PC.
+    15 OBJECT-COMPUTER.     IBM-PC.
+    16 SPECIAL-NAMES.       DECIMAL-POINT IS COMMA.
+    17
+    18 INPUT-OUTPUT         SECTION.
+    19 FILE-CONTROL.
+    20        SELECT CADSOC1 ASSIGN TO DISK
+    21        ORGANIZATION IS LINE SEQUENTIAL.
+    22
+    23        SELECT CADSOC2 ASSIGN TO DISK
+    24        ORGANIZATION IS LINE SEQUENTIAL.
+    25
+    26        SELECT RELSOCIO ASSIGN TO DISK.
+    27
+    28*==============================================================
+    29 DATA                 DIVISION.
+    30 FILE SECTION.
+    31
+    32 FD     CADSOC1
+    33        LABEL RECORD ARE STANDARD
+    34        VALUE OF FILE-ID IS "CADSOC1.DAT".
+    35 01     REG-SOC1.
+    36        02 CODIGO-PAGAMENTO1 PIC 9(02).
+    37        02 NUMERO-SOCIO1     PIC 9(06).
+    38        02 NOME-SOCIO1       PIC X(30).
+    39        02 VALOR-PAGAMENTO1  PIC 9(09)V9(02).
+    40
+    41 FD     CADSOC2
+    42        LABEL RECORD ARE STANDART
+    43        VALUE OF FILE-ID IS "CADSOC2.DAT".
+    44 01     REG-SOC2.
+    45        02 NUMERO-SOCIO2     PIC 9(02).
+    46        02 NOME-SOCIO2       PIC X(30).
+    47        02 VALOR-PAGAMENTO2  PIC 9(09)V9(02).
+    48
+    49 FD     RELSOCIO
+    50        LABEL RECORD IS OMITTED.
+    51 01     REG-REL              PIC X(80).
+    52
+    53 WORKING-STORAGE      SECTION.
+    54 77 FIM-ARQ                  PIC X(03) VALUE "NAO".
+    55 77 CT-LIN                   PIC 9(02) VALUE 30.
+    56 77 CT-PAG                   PIC 9(02) VALUE ZEROES.
+    57 77 TOTAL-SOCIOS             PIC 9(05) VALUE ZEROES.
+* Microsoft COBOL Version 4.5        L2.4 revision 002 09-Apr-17 20:35 Page   2
+*                                       EX01.CBL
+    58 77 VALOR-TOTAL              PIC 9(12)V9(02) VALUE ZEROES.
+    59
+    60 01     CAB-01.
+    61        02 FILLER     PIC X(70) VALUE SPACES.
+    62        02 FILLER     PIC X(05) VALUE "PAG. ".
+    63        02 VAR-PAG    PIC 99.
+    64        02 FILLER     PIC X(03) VALUE SPACES.
+    65
+    66 01     CAB-02.
+    67        02 FILLER     PIC X(26) VALUE SPACES.
+    68        02 FILLER PIC X(27) VALUE "RELACAO DE SOCIOS ATRASADOS".
+    69        02 FILLER     PIC X(25) VALUE SPACES.
+    70
+    71 01     CAB-03.
+    72        02 FILLER     PIC X(05) VALUE SPACES.
+    73        02 FILLER     PIC X(15) VALUE "NUMERO DO SOCIO".
+    74        02 FILLER     PIC X(11) VALUE SPACES.
+    75        02 FILLER     PIC X(13) VALUE "NOME DO SOCIO".
+    76        02 FILLER     PIC X(11) VALUE SPACES.
+    77        02 FILLER     PIC X(18) VALUE "VALOR DO PAGAMENTO".
+    78        02 FILLER     PIC X(7) VALUE SPACES.
+    79
+    80 01     DETALHE.
+    81        02 FILLER            PIC X(09) VALUE SPACES.
+    82        02 NUMERO-SOCIO      PIC 999.999.
+    83        02 FILLER            PIC X(06) VALUE SPACES.
+    84        02 NOME-SOCIO        PIC X(30).
+    85        02 FILLER            PIC X(03) VALUE SPACES.
+    86        02 VALOR-PAGAMENTO   PIC ZZZ.ZZZ.ZZ9,99.
+    87        02 FILLER            PIC X(11) VALUE SPACES.
+    88
+    89 01     ROD-01.
+    90        02 FILLER            PIC X(05) VALUE SPACES.
+    91        02 FILLER PIC X(27) VALUE "Total de Socios atrasados: ".
+    92        02 VAR-SOCIOS        PIC 99999.
+    93        02 FILLER            PIC X(45) VALUE SPACES.
+    94
+    95 01     ROD-02.
+    96        02 FILLER            PIC X(05) VALUE SPACES.
+    97        02 FILLER PIC X(27) VALUE "Valor Total atrasado     :".
+    98        02 VAR-TOTAL         PIC ZZZ.ZZZ.ZZZ.ZZ9,99.
+    99        02 FILLER            PIC X(32) VALUES SPACES.
+   100
+   101*==============================================================
+   102 PROCEDURE            DIVISION.
+   103
+   104 PGM-EX01.
+   105        PERFORM INICIO.
+   106        PERFORM PRINCIPAL UNTIL FIM-ARQ EQUAL "SIM".
+   107        PERFORM FIM.
+   108        STOP RUN.
+   109
+   110 INICIO.
+   111        OPEN   INPUT  CADSOC1
+   112               OUTPUT CADSOC2
+   113               OUTPUT RELSOCIO.
+   114        PERFORM LEITURA.
+   115
+* Microsoft COBOL Version 4.5        L2.4 revision 002 09-Apr-17 20:35 Page   3
+*                                       EX01.CBL
+   116 LEITURA.
+   117        READ CADSOC1 AT END MOVE "SIM" TO FIM-ARQ.
+   118
+   119 PRINCIPAL.
+   120        PERFORM SELECAO.
+   121        PERFORM LEITURA.
+   122
+   123 SELECAO.
+   124        IF CODIGO-PAGAMENTO1 EQUAL 1
+   125               PERFORM GRAVACAO
+   126        ELSE IF CODIGO-PAGAMENTO1 EQUAL 2
+   127               PERFORM RELATORIO.
+   128
+   129 GRAVACAO.
+   130        MOVE   NUMERO-SOCIO1        TO NUMERO-SOCIO2.
+   131        MOVE   NOME-SOCIO1          TO NOME-SOCIO2.
+   132        MOVE   VALOR-PAGAMENTO1     TO VALOR-PAGAMENTO2.
+   133        WRITE  REG-SOC2.
+   134
+   135 RELATORIO.
+   136        ADD 1 TO TOTAL-SOCIOS.
+   137        ADD VALOR-PAGAMENTO1 TO VALOR-TOTAL.
+   138        PERFORM IMPRESSAO.
+   139
+   140 IMPRESSAO.
+   141        IF CT-LIN GREATER THAN 29
+   142               PERFORM CABECALHO.
+   143        PERFORM IMPDET.
+   144
+   145 IMPDET.
+   146        MOVE   NUMERO-SOCIO1        TO NUMERO-SOCIO.
+   147        MOVE   NOME-SOCIO1          TO NOME-SOCIO.
+   148        MOVE   VALOR-PAGAMENTO1     TO VALOR-PAGAMENTO.
+   149        WRITE  REG-REL FROM DETALHE AFTER ADVANCING 1 LINE.
+   150        ADD 1 TO CT-LIN.
+   151
+   152 CABECALHO.
+   153        ADD 1 TO CT-PAG.
+   154        MOVE   CT-PAG               TO VAR-PAG.
+   155        MOVE   SPACES               TO REG-REL.
+   156        WRITE  REG-REL FROM CAB-01 AFTER ADVANCING 1 LINE.
+   157        WRITE  REG-REL FROM CAB-02 AFTER ADVANCING 3 LINES.
+   158        WRITE  REG-REL FROM CAB-03 AFTER ADVANCING 3 LINES.
+   159        MOVE   ZEROES               TO CT-LIN.
+   160
+   161 RODAPE.
+   162        MOVE   SPACES               TO REG-REL.
+   163        MOVE   TOTAL-SOCIOS         TO VAR-SOCIOS.
+   164        MOVE   VALOR-TOTAL          TO VAR-TOTAL.
+   165        WRITE  REG-REL FROM ROD-01 AFTER ADVANCING 3 LINES.
+   166        WRITE  REG-REL FROM ROD-02 AFTER ADVANCING 1 LINE.
+   167
+   168 FIM.
+   169        IF TOTAL-SOCIOS GREATER THAN ZEROES
+   170               PERFORM RODAPE.
+   171        CLOSE CADSOC1
+   172              CADSOC2
+   173              RELSOCIO.
+* Microsoft COBOL Version 4.5        L2.4 revision 002 09-Apr-17 20:35 Page   4
+*                                       EX01.CBL
+   174
+* Microsoft COBOL Version 4.5        L2.4 revision 002
+* (C)Copyright Microsoft Corp 1984, 1991       URN AXUPA/MS0/000000
+*                                              REF GNB-024050002A7
+*
+* Total Messages:     0
+* Data:        1848     Code:         806     Dictionary:        2344
