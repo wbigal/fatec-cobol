@@ -1,0 +1,37 @@
+                               TURISMAR TURISMO                                 
+
+                 RELATORIO DE DADOS DE CLIENTES INCONSISTENTES                  
+
+          CODIGO DO CLIENTE      DADOS INVALIDOS                                
+--------------------------------------------------------------------------------
+
+          002                    NOME NAO INFORMADO                             
+
+          003                    NOME NAO INFORMADO                             
+                                 ESTADO INVALIDO                                
+
+          004                    NOME NAO INFORMADO                             
+                                 ESTADO INVALIDO                                
+
+          005                    NOME NAO INFORMADO                             
+                                 CIDADE NAO INFORMADA                           
+
+          006                    NOME NAO INFORMADO                             
+                                 ESTADO INVALIDO                                
+                                 EMAIL SEM DESCRICAO                            
+
+          008                    CPF INVALIDO                                   
+
+          009                    CPF INVALIDO                                   
+
+          010                    CPF INVALIDO                                   
+
+          011                    CPF INVALIDO                                   
+                                 NOME NAO INFORMADO                             
+                                 ESTADO INVALIDO                                
+                                 CIDADE NAO INFORMADA                           
+                                 EMAIL SEM DESCRICAO                            
+
+          012                    CIDADE NAO INFORMADA                           
+
+          013                    EMAIL SEM DESCRICAO                            
