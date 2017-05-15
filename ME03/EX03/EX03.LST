@@ -1,0 +1,109 @@
+* Microsoft COBOL Version 4.5        L2.4 revision 002 14-May-17 23:45 Page   1
+*                                       EX03.CBL
+* Options: LIST(EX03.LST) NOASMLIST
+     1 IDENTIFICATION              DIVISION.
+     2
+     3 PROGRAM-ID.          EX-03.
+     4 AUTHOR.              WAGNER BIGAL.
+     5 INSTALLATION.        FATEC-SP.
+     6 DATE-WRITTEN.        14/05/2017.
+     7 DATE-COMPILED. 14-May-17 23:45.
+     8 SECURITY.            APENAS O AUTOR PODE MODIFICA-LO.
+     9*REMARKS.      ESTE PROGRAMA LE UM ARQUIVO E GERA UM ARQUIVO
+    10*              ARQUIVO DE SAIDA COM APENAS OS DEPTOS 01 E 02
+    11*              ORDENADOS PELO CODIGO.
+    12
+    13*==============================================================
+    14 ENVIRONMENT          DIVISION.
+    15
+    16 CONFIGURATION        SECTION.
+    17 SOURCE-COMPUTER.     IBM-PC.
+    18 OBJECT-COMPUTER.     IBM-PC.
+    19 SPECIAL-NAMES.       DECIMAL-POINT IS COMMA.
+    20
+    21 INPUT-OUTPUT         SECTION.
+    22 FILE-CONTROL.
+    23        SELECT CADENT ASSIGN TO DISK
+    24        ORGANIZATION IS LINE SEQUENTIAL.
+    25
+    26        SELECT TRAB ASSIGN TO DISK.
+    27
+    28        SELECT CADSAI ASSIGN TO DISK
+    29        ORGANIZATION IS LINE SEQUENTIAL.
+    30
+    31*==============================================================
+    32 DATA                 DIVISION.
+    33
+    34 FILE                 SECTION.
+    35 FD     CADENT
+    36        LABEL RECORD ARE STANDARD
+    37        VALUE OF FILE-ID IS "CADENT.DAT".
+    38 01     REG-ENT.
+    39        02 CODIGO            PIC 9(05).
+    40        02 NOME              PIC X(30).
+    41        02 DEPARTAMENTO      PIC 9(02).
+    42
+    43 SD     TRAB.
+    44 01     TRAB-REG.
+    45        02 CODIGO-TRAB       PIC 9(05).
+    46        02 NOME-TRAB         PIC X(30).
+    47        02 DEPARTAMENTO-TRAB PIC 9(02).
+    48
+    49 FD     CADSAI
+    50        LABEL RECORD ARE STANDARD
+    51        VALUE OF FILE-ID IS "CADSAI.DAT".
+    52 01     REG-SAI.
+    53        02 CODIGO-SAI        PIC 9(05).
+    54        02 NOME-SAI          PIC X(30).
+    55        02 DEPARTAMENTO-SAI  PIC 9(02).
+    56
+    57 WORKING-STORAGE SECTION.
+* Microsoft COBOL Version 4.5        L2.4 revision 002 14-May-17 23:45 Page   2
+*                                       EX03.CBL
+    58 77  FIM-ARQ      PIC X(03) VALUE "NAO".
+    59
+    60*==============================================================
+    61 PROCEDURE            DIVISION.
+    62
+    63 PGM-EX03.
+    64 SORT   TRAB
+    65        ASCENDING     KEY CODIGO-TRAB
+    66        USING         CADENT
+    67        OUTPUT        PROCEDURE ROT-SAIDA
+    68 STOP   RUN.
+    69
+    70 ROT-SAIDA            SECTION.
+    71        PERFORM INICIO.
+    72        PERFORM PRINCIPAL UNTIL FIM-ARQ EQUAL "SIM".
+    73        PERFORM FIM.
+    74
+    75 INICIO               SECTION.
+    76        OPEN        OUTPUT   CADSAI.
+    77        PERFORM     LEITURA.
+    78
+    79 LEITURA              SECTION.
+    80        RETURN TRAB
+    81               AT END MOVE "SIM" TO FIM-ARQ.
+    82
+    83 PRINCIPAL            SECTION.
+    84        PERFORM SELECAO.
+    85        PERFORM LEITURA.
+    86
+    87 SELECAO              SECTION.
+    88        IF DEPARTAMENTO-TRAB EQUAL 01 OR 02
+    89               PERFORM GRAVACAO.
+    90
+    91 GRAVACAO             SECTION.
+    92        MOVE    CODIGO-TRAB       TO CODIGO-SAI.
+    93        MOVE    DEPARTAMENTO-TRAB TO DEPARTAMENTO-SAI.
+    94        MOVE    NOME-TRAB         TO NOME-SAI.
+    95        WRITE   REG-SAI.
+    96
+    97 FIM                  SECTION.
+    98        CLOSE CADSAI.
+* Microsoft COBOL Version 4.5        L2.4 revision 002
+* (C)Copyright Microsoft Corp 1984, 1991       URN AXUPA/MS0/000000
+*                                              REF GNB-024050002A7
+*
+* Total Messages:     0
+* Data:        1268     Code:         514     Dictionary:        1593
