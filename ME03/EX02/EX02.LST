@@ -1,0 +1,109 @@
+* Microsoft COBOL Version 4.5        L2.4 revision 002 14-May-17 23:45 Page   1
+*                                       EX02.CBL
+* Options: LIST(EX02.LST) NOASMLIST
+     1 IDENTIFICATION              DIVISION.
+     2
+     3 PROGRAM-ID.          EX-02.
+     4 AUTHOR.              WAGNER BIGAL.
+     5 INSTALLATION.        FATEC-SP.
+     6 DATE-WRITTEN.        14/05/2017.
+     7 DATE-COMPILED. 14-May-17 23:45.
+     8 SECURITY.            APENAS O AUTOR PODE MODIFICA-LO.
+     9*REMARKS.      ESTE PROGRAMA LE UM ARQUIVO E GERA UM ARQUIVO
+    10*              DE SAIDA SELECIONANDO APENAS OS REGISTROS COM
+    11*              SEXO="M", ORDENANDO A SAIDA PELO CAMPO CODIGO.
+    12
+    13*==============================================================
+    14 ENVIRONMENT          DIVISION.
+    15
+    16 CONFIGURATION        SECTION.
+    17 SOURCE-COMPUTER.     IBM-PC.
+    18 OBJECT-COMPUTER.     IBM-PC.
+    19 SPECIAL-NAMES.       DECIMAL-POINT IS COMMA.
+    20
+    21 INPUT-OUTPUT         SECTION.
+    22 FILE-CONTROL.
+    23        SELECT CADENT ASSIGN TO DISK
+    24        ORGANIZATION IS LINE SEQUENTIAL.
+    25
+    26        SELECT TRAB ASSIGN TO DISK.
+    27
+    28        SELECT CADSAI ASSIGN TO DISK
+    29        ORGANIZATION IS LINE SEQUENTIAL.
+    30
+    31*==============================================================
+    32 DATA                 DIVISION.
+    33
+    34 FILE                 SECTION.
+    35 FD     CADENT
+    36        LABEL RECORD ARE STANDARD
+    37        VALUE OF FILE-ID IS "CADENT.DAT".
+    38 01     REG-ENT.
+    39        02 CODIGO            PIC 9(05).
+    40        02 NOME              PIC X(30).
+    41        02 SEXO              PIC X(01).
+    42
+    43 SD     TRAB.
+    44 01     TRAB-REG.
+    45        02 CODIGO-TRAB       PIC 9(05).
+    46        02 NOME-TRAB         PIC X(30).
+    47        02 SEXO-TRAB         PIC X(01).
+    48
+    49 FD     CADSAI
+    50        LABEL RECORD ARE STANDARD
+    51        VALUE OF FILE-ID IS "CADSAI.DAT".
+    52 01     REG-SAI.
+    53        02 CODIGO-SAI        PIC 9(05).
+    54        02 NOME-SAI          PIC X(30).
+    55        02 SEXO-SAI          PIC X(01).
+    56
+    57 WORKING-STORAGE SECTION.
+* Microsoft COBOL Version 4.5        L2.4 revision 002 14-May-17 23:45 Page   2
+*                                       EX02.CBL
+    58 77  FIM-ARQ      PIC X(03) VALUE "NAO".
+    59
+    60*==============================================================
+    61 PROCEDURE            DIVISION.
+    62
+    63 PGM-EX02.
+    64 SORT   TRAB
+    65        ASCENDING     KEY CODIGO-TRAB
+    66        INPUT PROCEDURE ROT-ENTRADA
+    67        GIVING        CADSAI
+    68 STOP   RUN.
+    69
+    70 ROT-ENTRADA          SECTION.
+    71        PERFORM INICIO-ENTRADA.
+    72        PERFORM PRINCIPAL-ENTRADA UNTIL FIM-ARQ EQUAL "SIM".
+    73        PERFORM FIM-ENTRADA.
+    74
+    75 INICIO-ENTRADA       SECTION.
+    76        OPEN        INPUT   CADENT.
+    77        PERFORM     LEITURA-ENTRADA.
+    78
+    79 LEITURA-ENTRADA      SECTION.
+    80        READ   CADENT
+    81               AT END MOVE "SIM" TO FIM-ARQ.
+    82
+    83 PRINCIPAL-ENTRADA    SECTION.
+    84        PERFORM SELECAO-ENTRADA.
+    85        PERFORM LEITURA-ENTRADA.
+    86
+    87 SELECAO-ENTRADA      SECTION.
+    88        IF SEXO EQUAL "M"
+    89               PERFORM GRAVACAO-ENTRADA.
+    90
+    91 GRAVACAO-ENTRADA     SECTION.
+    92        MOVE      CODIGO     TO CODIGO-TRAB.
+    93        MOVE      SEXO       TO SEXO-TRAB.
+    94        MOVE      NOME       TO NOME-TRAB.
+    95        RELEASE   TRAB-REG.
+    96
+    97 FIM-ENTRADA          SECTION.
+    98        CLOSE CADENT.
+* Microsoft COBOL Version 4.5        L2.4 revision 002
+* (C)Copyright Microsoft Corp 1984, 1991       URN AXUPA/MS0/000000
+*                                              REF GNB-024050002A7
+*
+* Total Messages:     0
+* Data:        1244     Code:         488     Dictionary:        1613
