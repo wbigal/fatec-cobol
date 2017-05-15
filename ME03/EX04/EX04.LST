@@ -1,0 +1,198 @@
+* Microsoft COBOL Version 4.5        L2.4 revision 002 15-May-17 01:40 Page   1
+*                                       EX04.CBL
+* Options: LIST(EX04.LST) NOASMLIST
+     1 IDENTIFICATION              DIVISION.
+     2
+     3 PROGRAM-ID.          EX-04.
+     4 AUTHOR.              WAGNER BIGAL.
+     5 INSTALLATION.        FATEC-SP.
+     6 DATE-WRITTEN.        14/05/2017.
+     7 DATE-COMPILED. 15-May-17 01:40.
+     8 SECURITY.            APENAS O AUTOR PODE MODIFICA-LO.
+     9*REMARKS.      ESTE PROGRAMA LE UM ARQUIVO E GERA UM ARQUIVO
+    10*              RELATORIO COM OS DADOS DO CLIENTE ORDENADOS POR
+    11*              CPF.
+    12
+    13*==============================================================
+    14 ENVIRONMENT          DIVISION.
+    15
+    16 CONFIGURATION        SECTION.
+    17 SOURCE-COMPUTER.     IBM-PC.
+    18 OBJECT-COMPUTER.     IBM-PC.
+    19 SPECIAL-NAMES.       DECIMAL-POINT IS COMMA.
+    20
+    21 INPUT-OUTPUT         SECTION.
+    22 FILE-CONTROL.
+    23        SELECT CAD-CLIENTE ASSIGN TO DISK
+    24        ORGANIZATION IS LINE SEQUENTIAL.
+    25
+    26        SELECT ARQ-SORT ASSIGN TO DISK.
+    27
+    28        SELECT REL-GERAL ASSIGN TO DISK
+    29        ORGANIZATION IS LINE SEQUENTIAL.
+    30
+    31*==============================================================
+    32 DATA                 DIVISION.
+    33
+    34 FILE                 SECTION.
+    35 FD     CAD-CLIENTE
+    36        LABEL RECORD ARE STANDARD
+    37        VALUE OF FILE-ID IS "CAD-CLIENTE.DAT".
+    38 01     REG-ENT.
+    39        02 CODIGO            PIC 9(03).
+    40        02 CPF               PIC 9(11).
+    41        02 NOME              PIC X(30).
+    42        02 ESTADO            PIC X(02).
+    43        02 CIDADE            PIC X(30).
+    44        02 EMAIL             PIC X(30).
+    45
+    46 SD     ARQ-SORT.
+    47 01     TRAB-REG.
+    48        02 CODIGO-TRAB       PIC 9(03).
+    49        02 CPF-TRAB          PIC 9(11).
+    50        02 NOME-TRAB         PIC X(30).
+    51        02 ESTADO-TRAB       PIC X(02).
+    52        02 CIDADE-TRAB       PIC X(30).
+    53        02 EMAIL-TRAB        PIC X(30).
+    54
+    55 FD     REL-GERAL
+    56        LABEL RECORD IS OMITTED.
+    57 01     REG-REL              PIC X(80).
+* Microsoft COBOL Version 4.5        L2.4 revision 002 15-May-17 01:40 Page   2
+*                                       EX04.CBL
+    58
+    59 WORKING-STORAGE SECTION.
+    60 77 FIM-ARQ                  PIC X(03) VALUE "NAO".
+    61 77 CT-LIN                   PIC 9(02) VALUE 20.
+    62 77 CT-PAG                   PIC 9(02) VALUE ZEROES.
+    63 77 ESTADO-ATUAL             PIC X(02) VALUE SPACES.
+    64 77 CIDADE-ATUAL             PIC X(30) VALUE SPACES.
+    65
+    66 01     CAB-01.
+    67        02 FILLER            PIC X(15) VALUE SPACES.
+    68        02 FILLER            PIC X(37)
+    69            VALUE "RELACAO DE CLIENTES POR ESTADO\CIDADE".
+    70        02 FILLER            PIC X(04) VALUE SPACES.
+    71        02 FILLER            PIC X(06) VALUE "PAG.  ".
+    72        02 VAR-PAG           PIC ZZ9.
+    73        02 FILLER            PIC X(15) VALUE SPACES.
+    74
+    75
+    76 01     CAB-02.
+    77        02 FILLER            PIC X(01) VALUE SPACES.
+    78        02 FILLER            PIC X(03) VALUE "CPF".
+    79        02 FILLER            PIC X(25) VALUE SPACES.
+    80        02 FILLER            PIC X(04) VALUE "NOME".
+    81        02 FILLER            PIC X(29) VALUE SPACES.
+    82        02 FILLER            PIC X(05) VALUE "EMAIL".
+    83        02 FILLER            PIC X(13) VALUE SPACES.
+    84
+    85 01     CAB-ESTADO.
+    86        02 FILLER            PIC X(01) VALUE SPACES.
+    87        02 FILLER            PIC X(08) VALUE "ESTADO: ".
+    88        02 VAR-ESTADO        PIC X(02).
+    89        02 FILLER            PIC X(69) VALUE SPACES.
+    90
+    91 01     CAB-CIDADE.
+    92        02 FILLER            PIC X(01) VALUE SPACES.
+    93        02 FILLER            PIC X(08) VALUE "CIDADE: ".
+    94        02 VAR-CIDADE        PIC X(30).
+    95        02 FILLER            PIC X(41) VALUE SPACES.
+    96
+    97 01     LINHA-BRANCO.
+    98        02 FILLER            PIC X(80) VALUE SPACES.
+    99
+   100 01     DETALHE.
+   101        02 FILLER            PIC X(01) VALUE SPACES.
+   102        02 VAR-CPF           PIC ZZ9.999.999.99.
+   103        02 FILLER            PIC X(02) VALUE SPACES.
+   104        02 VAR-NOME          PIC X(30).
+   105        02 FILLER            PIC X(02) VALUE SPACES.
+   106        02 VAR-EMAIL         PIC X(30).
+   107        02 FILLER            PIC X(01) VALUE SPACES.
+   108
+   109*==============================================================
+   110 PROCEDURE            DIVISION.
+   111
+   112 PGM-EX04.
+   113 SORT   ARQ-SORT
+   114        ASCENDING     KEY ESTADO-TRAB
+   115        ASCENDING     KEY CIDADE-TRAB
+* Microsoft COBOL Version 4.5        L2.4 revision 002 15-May-17 01:40 Page   3
+*                                       EX04.CBL
+   116        ASCENDING     KEY CPF-TRAB
+   117        USING         CAD-CLIENTE
+   118        OUTPUT        PROCEDURE ROT-SAIDA
+   119 STOP   RUN.
+   120
+   121 ROT-SAIDA            SECTION.
+   122        PERFORM INICIO.
+   123        PERFORM PRINCIPAL UNTIL FIM-ARQ EQUAL "SIM".
+   124        PERFORM FIM.
+   125
+   126 INICIO               SECTION.
+   127        OPEN        OUTPUT   REL-GERAL.
+   128        PERFORM     LEITURA.
+   129
+   130 LEITURA              SECTION.
+   131        RETURN ARQ-SORT
+   132               AT END MOVE "SIM" TO FIM-ARQ.
+   133
+   134 PRINCIPAL            SECTION.
+   135        PERFORM IMPRESSAO.
+   136        PERFORM LEITURA.
+   137
+   138 IMPRESSAO            SECTION.
+   139        PERFORM CABECALHO.
+   140
+   141        IF ESTADO-ATUAL NOT EQUAL ESTADO-TRAB OR
+   142           CIDADE-ATUAL NOT EQUAL CIDADE-TRAB
+   143               PERFORM IMPRIME-ESTADO-CIDADE.
+   144
+   145        PERFORM IMPRIME-DETALHE.
+   146
+   147 CABECALHO            SECTION.
+   148        IF CT-LIN GREATER THAN 19
+   149               PERFORM IMPRIME-TITULO.
+   150
+   151 IMPRIME-TITULO       SECTION.
+   152        ADD 1 TO CT-PAG.
+   153        MOVE   CT-PAG        TO VAR-PAG.
+   154        MOVE   SPACES        TO REG-REL.
+   155        WRITE  REG-REL FROM CAB-01.
+   156        MOVE   ZEROES        TO CT-LIN.
+   157
+   158 IMPRIME-ESTADO-CIDADE SECTION.
+   159        IF ESTADO-ATUAL NOT EQUAL SPACES
+   160               PERFORM COMPLETA-LINHAS UNTIL CT-LIN EQUAL 20.
+   161
+   162        PERFORM CABECALHO.
+   163        MOVE   ESTADO-TRAB   TO ESTADO-ATUAL.
+   164        MOVE   ESTADO-TRAB   TO VAR-ESTADO.
+   165        MOVE   CIDADE-TRAB   TO CIDADE-ATUAL.
+   166        MOVE   CIDADE-TRAB   TO VAR-CIDADE.
+   167        WRITE  REG-REL FROM CAB-ESTADO AFTER ADVANCING 1 LINE.
+   168        WRITE  REG-REL FROM CAB-CIDADE AFTER ADVANCING 2 LINE.
+   169        WRITE  REG-REL FROM CAB-02 AFTER ADVANCING 2 LINE.
+   170        WRITE  REG-REL FROM LINHA-BRANCO AFTER ADVANCING 1 LINE.
+   171
+   172 COMPLETA-LINHAS      SECTION.
+   173        WRITE  REG-REL FROM LINHA-BRANCO AFTER ADVANCING 1 LINE.
+* Microsoft COBOL Version 4.5        L2.4 revision 002 15-May-17 01:40 Page   4
+*                                       EX04.CBL
+   174        ADD 1 TO CT-LIN.
+   175
+   176 IMPRIME-DETALHE      SECTION.
+   177        MOVE    CPF-TRAB     TO VAR-CPF.
+   178        MOVE    NOME-TRAB    TO VAR-NOME.
+   179        MOVE    EMAIL-TRAB   TO VAR-EMAIL.
+   180        WRITE   REG-REL FROM DETALHE AFTER ADVANCING 1 LINE.
+   181
+   182 FIM                  SECTION.
+   183        CLOSE REL-GERAL.
+* Microsoft COBOL Version 4.5        L2.4 revision 002
+* (C)Copyright Microsoft Corp 1984, 1991       URN AXUPA/MS0/000000
+*                                              REF GNB-024050002A7
+*
+* Total Messages:     0
+* Data:        1996     Code:         907     Dictionary:        2663
