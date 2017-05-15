@@ -1,0 +1,76 @@
+* Microsoft COBOL Version 4.5        L2.4 revision 002 14-May-17 23:44 Page   1
+*                                       EX01.CBL
+* Options: LIST(EX01.LST) NOASMLIST
+     1 IDENTIFICATION              DIVISION.
+     2
+     3 PROGRAM-ID.          EX-01.
+     4 AUTHOR.              WAGNER BIGAL.
+     5 INSTALLATION.        FATEC-SP.
+     6 DATE-WRITTEN.        14/05/2017.
+     7 DATE-COMPILED. 14-May-17 23:44.
+     8 SECURITY.            APENAS O AUTOR PODE MODIFICA-LO.
+     9*REMARKS.      ESTE PROGRAMA LE UM ARQUIVO E GERA UM ARQUIVO
+    10*              DE SAIDA ORDENADO PELO CAMPO CODIGO E NOME.
+    11
+    12*==============================================================
+    13 ENVIRONMENT          DIVISION.
+    14
+    15 CONFIGURATION        SECTION.
+    16 SOURCE-COMPUTER.     IBM-PC.
+    17 OBJECT-COMPUTER.     IBM-PC.
+    18 SPECIAL-NAMES.       DECIMAL-POINT IS COMMA.
+    19
+    20 INPUT-OUTPUT         SECTION.
+    21 FILE-CONTROL.
+    22        SELECT CADENT ASSIGN TO DISK
+    23        ORGANIZATION IS LINE SEQUENTIAL.
+    24
+    25        SELECT TRAB ASSIGN TO DISK.
+    26
+    27        SELECT CADSAI ASSIGN TO DISK
+    28        ORGANIZATION IS LINE SEQUENTIAL.
+    29
+    30*==============================================================
+    31 DATA                 DIVISION.
+    32
+    33 FILE                 SECTION.
+    34 FD     CADENT
+    35        LABEL RECORD ARE STANDARD
+    36        VALUE OF FILE-ID IS "CADENT.DAT".
+    37 01     REG-ENT.
+    38        02 CODIGO            PIC 9(05).
+    39        02 NOME              PIC X(30).
+    40        02 SEXO              PIC X(01).
+    41
+    42 SD     TRAB.
+    43 01     TRAB-REG.
+    44        02 CODIGO-TRAB       PIC 9(05).
+    45        02 NOME-TRAB         PIC X(30).
+    46        02 SEXO-TRAB         PIC X(01).
+    47
+    48 FD     CADSAI
+    49        LABEL RECORD ARE STANDARD
+    50        VALUE OF FILE-ID IS "CADSAI.DAT".
+    51 01     REG-SAI.
+    52        02 CODIGO-SAI        PIC 9(05).
+    53        02 NOME-SAI         PIC X(30).
+    54        02 SEXO-SAI          PIC X(01).
+    55
+    56*==============================================================
+    57 PROCEDURE            DIVISION.
+* Microsoft COBOL Version 4.5        L2.4 revision 002 14-May-17 23:44 Page   2
+*                                       EX01.CBL
+    58
+    59 PGM-EX01.
+    60 SORT   TRAB
+    61        ASCENDING     KEY CODIGO-TRAB
+    62        ASCENDING     KEY NOME-TRAB
+    63        USING         CADENT
+    64        GIVING        CADSAI
+    65 STOP   RUN.
+* Microsoft COBOL Version 4.5        L2.4 revision 002
+* (C)Copyright Microsoft Corp 1984, 1991       URN AXUPA/MS0/000000
+*                                              REF GNB-024050002A7
+*
+* Total Messages:     0
+* Data:        1256     Code:         275     Dictionary:        1200
